@@ -5,9 +5,12 @@ const LIMIT = 40;
 
 export default route('GET', async (req, res, me) => {
   const rows = must(await db().from('checkins')
-    .select('id, day, created_at, photo_path, person_id, people(name)')
+    .select('id, day, created_at, photo_path, person_id')
     .order('created_at', { ascending: false })
     .limit(LIMIT));
+
+  const people = must(await db().from('people').select('id, name'));
+  const names = new Map(people.map((p) => [p.id, p.name]));
 
   const ids = rows.map((r) => r.id);
   const reactions = ids.length
@@ -25,7 +28,7 @@ export default route('GET', async (req, res, me) => {
     const mine = reactions.filter((x) => x.checkin_id === r.id);
     return {
       id: r.id,
-      name: r.people?.name ?? 'Someone',
+      name: names.get(r.person_id) ?? 'Someone',
       personId: r.person_id,
       day: r.day,
       createdAt: r.created_at,
