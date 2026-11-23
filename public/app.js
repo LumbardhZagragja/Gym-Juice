@@ -84,8 +84,9 @@ async function api(path, { method = 'GET', body } = {}) {
     throw new Error(data.error || 'Please log in again');
   }
   if (!res.ok) {
-    const err = new Error(data.error || 'Something went wrong');
+    const err = new Error(data.error || `Something went wrong (HTTP ${res.status})`);
     err.status = res.status;
+    err.detail = data.detail || `${path} returned HTTP ${res.status}`;
     throw err;
   }
   return data;
@@ -124,7 +125,9 @@ async function render() {
     else await (pages[route] || homePage)(id);
   } catch (err) {
     if (id !== renderId) return;
-    view.innerHTML = `<div class="empty"><p>${esc(err.message)}</p><button type="button" class="btn ghost" id="retry">Try again</button></div>`;
+    console.error(err);
+    const detail = err.detail || `${err.name}: ${err.message}`;
+    view.innerHTML = `<div class="empty"><p>${esc(err.message)}</p><p class="small" style="word-break:break-word">${esc(detail)}</p><button type="button" class="btn ghost" id="retry">Try again</button></div>`;
     document.getElementById('retry').onclick = render;
   }
 }
