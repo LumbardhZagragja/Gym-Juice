@@ -30,7 +30,7 @@ button { font: inherit; color: inherit; cursor: pointer; }
 a { color: var(--yellow); }
 
 .app { max-width: 480px; margin: 0 auto; min-height: 100vh; display: flex; flex-direction: column; }
-.top { display: flex; align-items: center; justify-content: space-between; padding: 18px 16px 6px; }
+.top { display: flex; align-items: center; justify-content: space-between; padding: calc(18px + env(safe-area-inset-top)) 16px 6px; }
 .logo {
   font-family: 'Lilita One', sans-serif; font-size: 36px; line-height: 1; text-decoration: none;
   color: var(--yellow); display: inline-block; transform: skewX(-8deg) rotate(-4deg);
