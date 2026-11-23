@@ -33,6 +33,12 @@ alter table people enable row level security;
 alter table checkins enable row level security;
 alter table reactions enable row level security;
 
+-- Newer Supabase projects don't grant table access to service_role automatically.
+grant usage on schema public to service_role;
+grant select, insert, update, delete on all tables in schema public to service_role;
+alter default privileges in schema public
+  grant select, insert, update, delete on tables to service_role;
+
 -- Private bucket for gym photos.
 insert into storage.buckets (id, name, public)
 values ('photos', 'photos', false)
