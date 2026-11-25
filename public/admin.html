@@ -8,7 +8,7 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@1,800;1,900&family=Barlow:wght@500;600;700&family=Lilita+One&display=swap">
   <link rel="stylesheet" href="/styles.css">
   <style>
-    input { width: 100%; min-height: 48px; border-radius: 14px; border: 1px solid var(--line); background: var(--card); color: #fff; padding: 0 14px; font: inherit; font-size: 16px; }
+    input, select { width: 100%; min-height: 48px; border-radius: 14px; border: 1px solid var(--line); background: var(--card); color: #fff; padding: 0 14px; font: inherit; font-size: 16px; }
     label { font-weight: 700; display: block; margin-bottom: 6px; }
     .admin-row { display: flex; align-items: center; gap: 8px; padding: 8px 0; border-top: 1px solid var(--line); flex-wrap: wrap; }
     .admin-row .name { flex: 1; font-weight: 700; min-width: 100px; }
@@ -35,6 +35,19 @@
           <label for="newName">Add a friend</label>
           <input id="newName" maxlength="30" required placeholder="Name">
           <button class="btn" type="submit">Add</button>
+        </form>
+        <form id="fixForm" class="card" style="display:flex;flex-direction:column;gap:10px">
+          <h2>Fix check-ins</h2>
+          <p class="muted small" style="margin:0">Someone forgot to check in, or a check-in shouldn't count? Pick the person and the day.</p>
+          <label for="fixPerson">Who</label>
+          <select id="fixPerson" required></select>
+          <label for="fixDay">Day</label>
+          <input id="fixDay" type="date" required>
+          <div class="row">
+            <button class="btn" type="submit" data-fix="addCheckin">Add day</button>
+            <button class="btn ghost" type="submit" data-fix="removeCheckin">Remove day</button>
+          </div>
+          <p class="small" id="fixMsg" role="status" style="margin:0;color:var(--yellow);font-weight:700"></p>
         </form>
         <p class="muted small">"Reset PIN" logs that person out; they pick a new PIN next time they open the app.</p>
       </div>

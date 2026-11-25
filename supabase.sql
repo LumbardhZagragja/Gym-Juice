@@ -13,6 +13,7 @@ create table if not exists checkins (
   person_id uuid not null references people(id) on delete cascade,
   day date not null,                   -- local gym day (Europe/Berlin)
   photo_path text,                     -- null once the photo is deleted after 90 days
+  added_by_admin boolean not null default false, -- a day the admin added by hand (no photo)
   created_at timestamptz not null default now(),
   unique (person_id, day)              -- one check-in per person per day
 );
@@ -48,3 +49,6 @@ on conflict (id) do nothing;
 insert into people (name) values
   ('Lumi'), ('Rroni'), ('Doka'), ('Vali'), ('Kllosha'), ('Ndero')
 on conflict (name) do nothing;
+
+-- For databases created before the admin "Fix check-ins" feature:
+alter table checkins add column if not exists added_by_admin boolean not null default false;

@@ -4,10 +4,12 @@ import { route, send } from '../lib/http.js';
 const LIMIT = 40;
 
 export default route('GET', async (req, res, me) => {
-  const rows = must(await db().from('checkins')
-    .select('id, day, created_at, photo_path, person_id')
-    .order('created_at', { ascending: false })
-    .limit(LIMIT));
+  const recent = (cols) => db().from('checkins').select(cols)
+    .order('created_at', { ascending: false }).limit(LIMIT);
+  let result = await recent('id, day, created_at, photo_path, person_id, added_by_admin');
+  // Works even before the added_by_admin column has been added in Supabase.
+  if (result.error?.code === '42703') result = await recent('id, day, created_at, photo_path, person_id');
+  const rows = must(result);
 
   const people = must(await db().from('people').select('id, name'));
   const names = new Map(people.map((p) => [p.id, p.name]));
@@ -32,6 +34,7 @@ export default route('GET', async (req, res, me) => {
       personId: r.person_id,
       day: r.day,
       createdAt: r.created_at,
+      addedByAdmin: !!r.added_by_admin,
       photoUrl: r.photo_path ? urls.get(r.photo_path) ?? null : null,
       sus: mine.filter((x) => x.kind === 'sus').length,
       love: mine.filter((x) => x.kind === 'love').length,

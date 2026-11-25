@@ -46,6 +46,11 @@ function ago(iso) {
   return d === 1 ? 'yesterday' : `${d}d ago`;
 }
 
+function dayLabel(day) {
+  const [y, m, d] = day.split('-').map(Number);
+  return new Date(Date.UTC(y, m - 1, d, 12)).toLocaleDateString('en', { weekday: 'short', day: 'numeric', month: 'short', timeZone: 'UTC' });
+}
+
 function monthName(ym) {
   const [y, m] = ym.split('-').map(Number);
   return new Date(Date.UTC(y, m - 1, 15)).toLocaleString('en', { month: 'long', timeZone: 'UTC' });
@@ -248,7 +253,7 @@ async function homePage(id) {
       <a class="section-link" href="#feed">${ICON.photos}<h2>Recent check-ins</h2>${ICON.chevron}</a>
       ${recent.length ? `<div class="thumbs">${recent.map((p) => `
         <a class="thumb" href="#feed">${p.photoUrl ? `<img src="${esc(p.photoUrl)}" alt="${esc(p.name)} at the gym" loading="lazy">` : ''}
-          <span>${esc(p.name)} · ${esc(ago(p.createdAt))}</span></a>`).join('')}</div>`
+          <span>${esc(p.name)} · ${esc(p.addedByAdmin ? dayLabel(p.day) : ago(p.createdAt))}</span></a>`).join('')}</div>`
         : '<p class="empty">No check-ins yet. Be the first!</p>'}
     </section>`;
 }
@@ -432,9 +437,11 @@ async function feedPage(id) {
     <h1>Recent <span class="accent">check-ins</span></h1>
     ${posts.length ? `<div class="grid2">${posts.map((p) => `
       <article class="post">
-        <div class="post-head">${avatar(p.name)}<b>${esc(p.name)}</b><span class="muted">· ${esc(ago(p.createdAt))}</span></div>
+        <div class="post-head">${avatar(p.name)}<b>${esc(p.name)}</b><span class="muted">· ${esc(p.addedByAdmin ? dayLabel(p.day) : ago(p.createdAt))}</span></div>
         <div class="post-photo">
-          ${p.photoUrl ? `<img src="${esc(p.photoUrl)}" alt="${esc(p.name)} at the gym" loading="lazy">` : '<div class="gone">Photo cleared after 90 days</div>'}
+          ${p.photoUrl ? `<img src="${esc(p.photoUrl)}" alt="${esc(p.name)} at the gym" loading="lazy">`
+            : p.addedByAdmin ? `<div class="gone">Added by admin<br>for ${esc(dayLabel(p.day))}</div>`
+            : '<div class="gone">Photo cleared after 90 days</div>'}
           <div class="reacts">
             <button type="button" class="react" data-id="${esc(p.id)}" data-kind="sus" aria-pressed="${p.mySus}" aria-label="Sus">${ICON.sus}<span>${p.sus}</span></button>
             <button type="button" class="react" data-id="${esc(p.id)}" data-kind="love" aria-pressed="${p.myLove}" aria-label="Love">${ICON.heart}<span>${p.love}</span></button>

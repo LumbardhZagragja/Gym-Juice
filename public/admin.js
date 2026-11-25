@@ -13,11 +13,16 @@ async function call(action, extra = {}) {
   const data = await res.json().catch(() => ({}));
   if (!res.ok) throw new Error(data.error || 'Something went wrong');
   draw(data.people);
+  return data;
 }
 
 function draw(people) {
   $('keyForm').hidden = true;
   $('panel').hidden = false;
+  const picked = $('fixPerson').value;
+  $('fixPerson').innerHTML = '<option value="">Pick a friend…</option>' +
+    people.map((p) => `<option value="${esc(p.id)}">${esc(p.name)}</option>`).join('');
+  if (people.some((p) => p.id === picked)) $('fixPerson').value = picked;
   $('list').innerHTML = people.map((p) => `
     <div class="admin-row">
       <span class="name">${esc(p.name)} <span class="muted small">${p.hasPin ? '· PIN set' : '· no PIN yet'}</span></span>
@@ -57,6 +62,25 @@ $('addForm').addEventListener('submit', async (e) => {
   try {
     await call('add', { name: $('newName').value.trim() });
     $('newName').value = '';
+  } catch (err) { $('err').textContent = err.message; }
+});
+
+// Default the date picker to yesterday (in the group's timezone) and block future dates.
+const tzDay = (d) => new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Berlin' }).format(d);
+$('fixDay').max = tzDay(new Date());
+$('fixDay').value = tzDay(new Date(Date.now() - 864e5));
+
+$('fixForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const action = e.submitter?.dataset.fix || 'addCheckin';
+  const who = $('fixPerson').selectedOptions[0]?.textContent || '';
+  $('fixMsg').textContent = '';
+  if (action === 'removeCheckin' && !confirm(`Remove ${who}'s check-in on ${$('fixDay').value}?`)) return;
+  try {
+    await call(action, { personId: $('fixPerson').value, day: $('fixDay').value });
+    $('fixMsg').textContent = action === 'addCheckin'
+      ? `Done: ${who} gets a day for ${$('fixDay').value}.`
+      : `Done: removed ${who}'s check-in on ${$('fixDay').value}.`;
   } catch (err) { $('err').textContent = err.message; }
 });
 
